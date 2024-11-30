@@ -16,12 +16,12 @@ class Route(models.Model):
     source = models.ForeignKey(
         "Station",
         on_delete=models.CASCADE,
-        related_name="routes"
+        related_name="source_routes"
     )
     destination = models.ForeignKey(
         "Station",
         on_delete=models.CASCADE,
-        related_name="routes"
+        related_name="destination_routes"
     )
     distance = models.FloatField()
 
