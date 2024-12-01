@@ -37,6 +37,9 @@ class Order(models.Model):
         related_name="orders"
     )
 
+    class Meta:
+        ordering = ("-created_at",)
+
     def __str__(self):
         return f"Order #{self.id}"
 
