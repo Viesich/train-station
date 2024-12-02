@@ -1,6 +1,9 @@
+from datetime import timezone
+
 from user.models import User
 from django.db import models
 from django.forms import DateTimeField
+from django.utils import timezone
 
 
 class Station(models.Model):
@@ -57,8 +60,8 @@ class Ticket(models.Model):
 class Journey(models.Model):
     route = models.ForeignKey(Route, on_delete=models.CASCADE)
     train = models.ForeignKey("Train", on_delete=models.CASCADE)
-    departure_time = DateTimeField()
-    arrival_time = DateTimeField()
+    departure_time = models.DateTimeField(default=timezone.now)
+    arrival_time = models.DateTimeField(default=timezone.now)
     crew = models.ManyToManyField("Crew", related_name="crew")
 
     def __str__(self):
