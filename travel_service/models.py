@@ -1,8 +1,8 @@
-from datetime import timezone
+from django.contrib.auth import get_user_model
 
 from user.models import User
+
 from django.db import models
-from django.forms import DateTimeField
 from django.utils import timezone
 
 
@@ -35,7 +35,7 @@ class Route(models.Model):
 class Order(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     user = models.ForeignKey(
-        User,
+        get_user_model(),
         on_delete=models.CASCADE,
         related_name="orders"
     )
@@ -51,14 +51,14 @@ class Ticket(models.Model):
     cargo = models.IntegerField()
     seat = models.IntegerField()
     journey = models.ForeignKey("Journey", on_delete=models.CASCADE)
-    order = models.ForeignKey(Order, on_delete=models.CASCADE)
+    order = models.ForeignKey(Order, on_delete=models.CASCADE, null=False, related_name="tickets")
 
     def __str__(self):
         return f"{self.journey} -> {self.cargo}"
 
 
 class Journey(models.Model):
-    route = models.ForeignKey(Route, on_delete=models.CASCADE)
+    route = models.ForeignKey("Route", on_delete=models.CASCADE)
     train = models.ForeignKey("Train", on_delete=models.CASCADE)
     departure_time = models.DateTimeField(default=timezone.now)
     arrival_time = models.DateTimeField(default=timezone.now)
