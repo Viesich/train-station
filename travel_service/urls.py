@@ -23,7 +23,6 @@ router.register("train-types", TrainTypeViewSet)
 router.register("trains", TrainViewSet)
 router.register("crews", CrewViewSet)
 router.register("journeys", JourneyViewSet)
-# router.register("tickets", TicketViewSet)
 
 urlpatterns = [
     path("", include(router.urls)),
