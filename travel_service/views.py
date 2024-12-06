@@ -1,6 +1,5 @@
-from rest_framework import viewsets, status
+from rest_framework import viewsets
 from rest_framework.permissions import IsAuthenticated
-from rest_framework.response import Response
 
 from travel_service.models import (
     Order,
@@ -33,7 +32,6 @@ from travel_service.serializers import (
 
 class StationViewSet(viewsets.ModelViewSet):
     queryset = Station.objects.all()
-    permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
         return Station.objects.order_by("name")
@@ -49,7 +47,6 @@ class StationViewSet(viewsets.ModelViewSet):
 
 class RouteViewSet(viewsets.ModelViewSet):
     queryset = Route.objects.all()
-    permission_classes = [IsAuthenticated]
 
     def get_serializer_class(self):
         if self.action in ["list", "retrieve"]:
@@ -60,13 +57,11 @@ class RouteViewSet(viewsets.ModelViewSet):
 
 class TrainTypeViewSet(viewsets.ModelViewSet):
     queryset = TrainType.objects.all()
-    permission_classes = [IsAuthenticated]
     serializer_class = TrainTypeSerializer
 
 
 class TrainViewSet(viewsets.ModelViewSet):
     queryset = Train.objects.all()
-    permission_classes = [IsAuthenticated]
 
     def get_serializer_class(self):
         if self.action in ["list", "retrieve"]:
@@ -77,7 +72,6 @@ class TrainViewSet(viewsets.ModelViewSet):
 
 class CrewViewSet(viewsets.ModelViewSet):
     queryset = Crew.objects.all()
-    permission_classes = [IsAuthenticated]
 
     def get_serializer_class(self):
         if self.action in ["list", "retrieve"]:
@@ -88,7 +82,6 @@ class CrewViewSet(viewsets.ModelViewSet):
 
 class JourneyViewSet(viewsets.ModelViewSet):
     queryset = Journey.objects.all()
-    permission_classes = [IsAuthenticated]
 
     def get_serializer_class(self):
         if self.action in ["list", "retrieve"]:
@@ -105,7 +98,7 @@ class OrderViewSet(viewsets.ModelViewSet):
     queryset = Order.objects.prefetch_related(
         "tickets__journey__route", "tickets__journey__train"
     )
-    permission_classes = (IsAuthenticated,)
+    permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
         return Order.objects.filter(user=self.request.user)
@@ -115,16 +108,4 @@ class OrderViewSet(viewsets.ModelViewSet):
             return OrderListSerializer
         if self.action in ["create", "partial_update", "update"]:
             return OrderSerializer
-        return OrderSerializer
-
-    def create(self, request, *args, **kwargs):
-        serializer = OrderSerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-
-        tickets_data = serializer.validated_data.get("tickets")
-        order = Order.objects.create(user=request.user)
-
-        for ticket_data in tickets_data:
-            Ticket.objects.create(order=order, **ticket_data)
-
-        return Response({"order_id": order.id}, status=status.HTTP_201_CREATED)
+        return OrderListSerializer

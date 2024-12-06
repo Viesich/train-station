@@ -135,6 +135,7 @@ class TicketSerializer(serializers.ModelSerializer):
             "journey",
             "order",
         )
+        read_only_fields = ["order"]
         validators = [
             UniqueTogetherValidator(
                 queryset=Ticket.objects.all(),
