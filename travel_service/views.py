@@ -1,5 +1,6 @@
-from rest_framework import viewsets
+from rest_framework import viewsets, status
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
 
 from travel_service.models import (
     Order,
@@ -99,7 +100,6 @@ class OrderViewSet(viewsets.ModelViewSet):
         "tickets__journey__route", "tickets__journey__train"
     )
     permission_classes = [IsAuthenticated]
-
     def get_queryset(self):
         return Order.objects.filter(user=self.request.user)
 
