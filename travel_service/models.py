@@ -1,4 +1,7 @@
+from django.conf import settings
 from django.contrib.auth import get_user_model
+from django.db.models import UniqueConstraint
+from rest_framework.exceptions import ValidationError
 
 from user.models import User
 
@@ -7,7 +10,7 @@ from django.utils import timezone
 
 
 class Station(models.Model):
-    name = models.CharField(max_length=100)
+    name = models.CharField(max_length=100, db_index=True)
     latitude = models.FloatField()
     longitude = models.FloatField()
 
@@ -28,6 +31,11 @@ class Route(models.Model):
     )
     distance = models.FloatField()
 
+    class Meta:
+        indexes = [
+            models.Index(fields=["source", "destination"]),
+        ]
+
     def __str__(self):
         return f"{self.source.name} -> {self.destination.name}"
 
@@ -35,9 +43,8 @@ class Route(models.Model):
 class Order(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     user = models.ForeignKey(
-        get_user_model(),
-        on_delete=models.CASCADE,
-        related_name="orders"
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE
     )
 
     class Meta:
@@ -53,6 +60,42 @@ class Ticket(models.Model):
     journey = models.ForeignKey("Journey", on_delete=models.CASCADE)
     order = models.ForeignKey(Order, on_delete=models.CASCADE, null=False, related_name="tickets")
 
+    class Meta:
+        constraints = [
+            UniqueConstraint(
+                fields=["cargo", "seat", "journey"],
+                name="unique_cargo_seat_journey"
+                )
+        ]
+
+    def clean(self):
+        if not (1 <= self.seat <= self.journey.train.places_in_cargo):
+            raise ValidationError(
+                {
+                    "seat": f"Seat must be in range [1, {self.journey.train.places_in_cargo}], not {self.seat}",
+                }
+            )
+
+        if not (1 <= self.cargo <= self.journey.train.cargo_num):
+            raise ValidationError(
+                {
+                    "cargo": f"Cargo must be in range [1, {self.journey.train.cargo_num}], not {self.cargo}",
+                }
+            )
+
+    def save(
+        self,
+        force_insert=False,
+        force_update=False,
+        using=None,
+        update_fields=None,
+        **kwargs,
+    ):
+        self.full_clean()
+        return super(Ticket, self).save(
+            force_insert, force_update, using, update_fields
+        )
+
     def __str__(self):
         return f"{self.journey} -> {self.cargo}"
 
@@ -62,7 +105,13 @@ class Journey(models.Model):
     train = models.ForeignKey("Train", on_delete=models.CASCADE)
     departure_time = models.DateTimeField(default=timezone.now)
     arrival_time = models.DateTimeField(default=timezone.now)
-    crew = models.ManyToManyField("Crew", related_name="crew")
+    crews = models.ManyToManyField("Crew", related_name="crews")
+
+    class Meta:
+        indexes = [
+            models.Index(fields=["departure_time"]),
+            models.Index(fields=["arrival_time"]),
+        ]
 
     def __str__(self):
         return f"{self.train} -> {self.route}"
@@ -76,7 +125,7 @@ class TrainType(models.Model):
 
 
 class Train(models.Model):
-    name = models.CharField(max_length=100)
+    name = models.CharField(max_length=100, db_index=True)
     cargo_num = models.IntegerField()
     places_in_cargo = models.IntegerField()
     train_type = models.ForeignKey("TrainType", on_delete=models.CASCADE)
@@ -86,8 +135,8 @@ class Train(models.Model):
 
 
 class Crew(models.Model):
-    first_name = models.CharField(max_length=100)
-    last_name = models.CharField(max_length=100)
+    first_name = models.CharField(max_length=100, db_index=True)
+    last_name = models.CharField(max_length=100, db_index=True)
 
     def __str__(self):
         return f"{self.first_name} {self.last_name}"
