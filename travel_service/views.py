@@ -113,7 +113,7 @@ class JourneyViewSet(viewsets.ModelViewSet):
         if self.action == "list":
             return (
                 queryset
-                .select_related()
+                .select_related("route__source", "route__destination")
                 .prefetch_related("crews", "tickets")
                 .annotate(tickets_taken=Count("tickets"))
             )
