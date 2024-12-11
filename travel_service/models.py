@@ -10,7 +10,7 @@ from django.utils import timezone
 
 
 class Station(models.Model):
-    name = models.CharField(max_length=100, db_index=True)
+    name = models.CharField(max_length=100, unique=True, db_index=True)
     latitude = models.FloatField()
     longitude = models.FloatField()
 
@@ -68,20 +68,29 @@ class Ticket(models.Model):
                 )
         ]
 
-    def clean(self):
-        if not (1 <= self.seat <= self.journey.train.places_in_cargo):
-            raise ValidationError(
+    @staticmethod
+    def validate_seat_and_cargo(seat: int, place_in_cargo: int, cargo: int, cargo_num: int, error_to_raise):
+        if not (1 <= seat <= place_in_cargo):
+            raise error_to_raise(
                 {
-                    "seat": f"Seat must be in range [1, {self.journey.train.places_in_cargo}], not {self.seat}",
+                    "seat": f"seat must be in range [1, {place_in_cargo}], not {seat}"
+                }
+            )
+        if not (1 <= cargo <= cargo_num):
+            raise error_to_raise(
+                {
+                    "cargo": f"Cargo must be in range [1, {cargo_num}], not {cargo}"
                 }
             )
 
-        if not (1 <= self.cargo <= self.journey.train.cargo_num):
-            raise ValidationError(
-                {
-                    "cargo": f"Cargo must be in range [1, {self.journey.train.cargo_num}], not {self.cargo}",
-                }
-            )
+    def clean(self):
+        Ticket.validate_seat_and_cargo(
+            self.seat,
+            self.journey.train.places_in_cargo,
+            self.cargo,
+            self.journey.train.cargo_num,
+            ValueError
+        )
 
     def save(
         self,
@@ -118,14 +127,14 @@ class Journey(models.Model):
 
 
 class TrainType(models.Model):
-    name = models.CharField(max_length=100)
+    name = models.CharField(max_length=100, unique=True)
 
     def __str__(self):
         return self.name
 
 
 class Train(models.Model):
-    name = models.CharField(max_length=100, db_index=True)
+    name = models.CharField(max_length=100, unique=True, db_index=True)
     cargo_num = models.IntegerField()
     places_in_cargo = models.IntegerField()
     train_type = models.ForeignKey("TrainType", on_delete=models.CASCADE)
