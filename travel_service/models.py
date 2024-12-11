@@ -36,8 +36,8 @@ class Route(models.Model):
             models.Index(fields=["source", "destination"]),
         ]
 
-    # def __str__(self):
-    #     return f"{self.source.name} -> {self.destination.name}"
+    def __str__(self):
+        return f"{self.source} -> {self.destination}"
 
 
 class Order(models.Model):
