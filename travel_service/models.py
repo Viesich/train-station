@@ -57,7 +57,7 @@ class Order(models.Model):
 class Ticket(models.Model):
     cargo = models.IntegerField()
     seat = models.IntegerField()
-    journey = models.ForeignKey("Journey", on_delete=models.CASCADE)
+    journey = models.ForeignKey("Journey", on_delete=models.CASCADE, related_name="tickets")
     order = models.ForeignKey(Order, on_delete=models.CASCADE, null=False, related_name="tickets")
 
     class Meta:
@@ -67,6 +67,7 @@ class Ticket(models.Model):
                 name="unique_cargo_seat_journey"
                 )
         ]
+        ordering = ("cargo", "seat", )
 
     @staticmethod
     def validate_seat_and_cargo(seat: int, place_in_cargo: int, cargo: int, cargo_num: int, error_to_raise):
