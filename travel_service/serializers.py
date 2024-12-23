@@ -1,6 +1,7 @@
 from collections import defaultdict
 
 from django.db import transaction
+from django.db.models import Prefetch, Count
 from rest_framework import serializers
 
 from travel_service.models import (
@@ -130,14 +131,18 @@ class JourneyRetrieveSerializer(serializers.ModelSerializer):
     departure_time = serializers.SerializerMethodField()
     arrival_time = serializers.SerializerMethodField()
     crews = serializers.SerializerMethodField()
-    taken_seats = serializers.SerializerMethodField()
+    free_seats_by_cargo = serializers.SerializerMethodField()
 
     class Meta:
         model = Journey
-        fields = ("id", "route", "train", "departure_time", "arrival_time", "crews", "taken_seats")
+        fields = (
+            "id", "route", "train", "departure_time", "arrival_time",
+            "crews", "free_seats_by_cargo",
+        )
 
     def get_crews(self, obj):
         return [f"{crew.first_name} {crew.last_name}" for crew in obj.crews.all()]
+
     def get_departure_time(self, obj):
         return f"{obj.departure_time.strftime('%Y-%m-%d %H:%M')}"
 
@@ -147,28 +152,39 @@ class JourneyRetrieveSerializer(serializers.ModelSerializer):
     def get_route(self, obj):
         return f"{obj.route.source} -> {obj.route.destination} ({obj.route.distance} km)"
 
-    def get_taken_seats(self, obj):
-        tickets = obj.tickets.all()
-        grouped_seats = defaultdict(list)
+    def get_free_seats_by_cargo(self, obj):
+        total_places_per_cargo = obj.train.places_in_cargo
+        total_cargos = obj.train.cargo_num
 
-        for ticket in tickets:
-            grouped_seats[ticket.cargo].append(ticket.seat)
+        taken_seats = (
+            obj.tickets.values("cargo", "seat")
+            .order_by("cargo", "seat")
+        )
 
-        return [
-            {
+        taken_seats_dict = defaultdict(set)
+        for ticket in taken_seats:
+            taken_seats_dict[ticket["cargo"]].add(ticket["seat"])
+
+        free_seats = []
+        for cargo in range(1, total_cargos + 1):
+            occupied_seats = taken_seats_dict.get(cargo, set())
+            all_seats = set(range(1, total_places_per_cargo + 1))
+            available_seats = sorted(all_seats - occupied_seats)
+
+            free_seats.append({
                 "cargo": cargo,
-                "seat": ", ".join(map(str, sorted(seats)))
-            }
-            for cargo, seats in grouped_seats.items()
-        ]
+                "free_seats": ", ".join(map(str, available_seats))
+            })
+
+        return free_seats
 
 
 class JourneyListSerializer(JourneyRetrieveSerializer):
-    tickets_taken = serializers.IntegerField(read_only=True)
+    tickets_available = serializers.IntegerField(read_only=True)
 
     class Meta:
         model = Journey
-        fields = ("id", "route", "departure_time", "tickets_taken")
+        fields = ("id", "route", "departure_time", "tickets_available")
 
 
 class OrderSerializer(serializers.ModelSerializer):

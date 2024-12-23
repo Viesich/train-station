@@ -1,4 +1,4 @@
-from django.db.models import Count
+from django.db.models import Count, Prefetch, F
 from rest_framework import viewsets
 from rest_framework.permissions import IsAuthenticated
 
@@ -110,15 +110,19 @@ class JourneyViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         queryset = self.queryset
+
         if self.action == "list":
             return (
                 queryset
-                .select_related("route__source", "route__destination")
+                .select_related()
                 .prefetch_related("crews", "tickets")
-                .annotate(tickets_taken=Count("tickets"))
+                .annotate(tickets_available=F("train__cargo_num") * F("train__places_in_cargo") - Count("tickets"))
             )
         if self.action == "retrieve":
-            return queryset.select_related().prefetch_related("crews", "tickets")
+            return queryset.select_related("route", "train").prefetch_related(
+                "crews",
+                "tickets",
+            )
         return queryset
 
     def get_serializer_class(self):
@@ -126,8 +130,6 @@ class JourneyViewSet(viewsets.ModelViewSet):
             return JourneyListSerializer
         if self.action == "retrieve":
             return JourneyRetrieveSerializer
-        if self.action in ["update", "partial_update"]:
-            return JourneySerializer
         return JourneySerializer
 
 
@@ -144,12 +146,26 @@ class TicketViewSet(viewsets.ModelViewSet):
 
 
 class OrderViewSet(viewsets.ModelViewSet):
-    queryset = Order.objects.all()
+    queryset = Order.objects.prefetch_related(
+        Prefetch(
+            "tickets",
+            queryset=Ticket.objects.select_related(
+                "journey__route__source",
+                "journey__route__destination",
+                "journey__train"
+            )
+        )
+    )
 
     def get_queryset(self):
         queryset = self.queryset
         if self.action == "list":
-            return queryset.select_related()
+            return queryset.select_related().prefetch_related(
+                "tickets",
+                "tickets__journey__crews",
+                "tickets__journey__train",
+                "tickets__journey__route",
+            )
         return queryset
 
     permission_classes = [IsAuthenticated]
