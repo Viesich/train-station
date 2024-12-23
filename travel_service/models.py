@@ -37,7 +37,7 @@ class Route(models.Model):
         ]
 
     def __str__(self):
-        return f"{self.source} -> {self.destination}"
+        return f"{self.source_id} -> {self.destination_id}"
 
 
 class Order(models.Model):
@@ -107,7 +107,7 @@ class Ticket(models.Model):
         )
 
     def __str__(self):
-        return f"{self.journey} -> {self.cargo}"
+        return f"{self.journey_id} -> {self.cargo}"
 
 
 class Journey(models.Model):
@@ -124,7 +124,7 @@ class Journey(models.Model):
         ]
 
     def __str__(self):
-        return f"{self.train} -> {self.route}"
+        return f"{self.train_id} -> {self.route_id}"
 
 
 class TrainType(models.Model):
