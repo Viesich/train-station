@@ -48,7 +48,7 @@ class Order(models.Model):
     )
 
     class Meta:
-        ordering = ("-created_at",)
+        ordering = ("id",)
 
     def __str__(self):
         return f"Order #{self.id}"
@@ -139,6 +139,7 @@ class Train(models.Model):
     cargo_num = models.IntegerField()
     places_in_cargo = models.IntegerField()
     train_type = models.ForeignKey("TrainType", on_delete=models.CASCADE)
+    image = models.ImageField(null=True, upload_to="uploads/")
 
     def __str__(self):
         return self.name
