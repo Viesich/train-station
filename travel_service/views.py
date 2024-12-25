@@ -1,6 +1,6 @@
 from django.db.models import Count, Prefetch, F
 from rest_framework import viewsets
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, IsAdminUser, IsAuthenticatedOrReadOnly, AllowAny
 
 from travel_service.models import (
     Order,
@@ -34,6 +34,7 @@ from travel_service.serializers import (
 
 class StationViewSet(viewsets.ModelViewSet):
     queryset = Station.objects.all()
+    permission_classes = [IsAdminUser]
 
     def get_queryset(self):
         queryset = self.queryset
@@ -52,6 +53,7 @@ class StationViewSet(viewsets.ModelViewSet):
 
 class RouteViewSet(viewsets.ModelViewSet):
     queryset = Route.objects.all()
+    permission_classes = [IsAdminUser]
     def get_queryset(self):
         queryset = self.queryset
         if self.action in ("list", "retrieve"):
@@ -68,10 +70,12 @@ class RouteViewSet(viewsets.ModelViewSet):
 class TrainTypeViewSet(viewsets.ModelViewSet):
     queryset = TrainType.objects.all()
     serializer_class = TrainTypeSerializer
+    permission_classes = [IsAdminUser]
 
 
 class TrainViewSet(viewsets.ModelViewSet):
     queryset = Train.objects.all()
+    permission_classes = [IsAdminUser]
 
     @staticmethod
     def _params_to_inits(query_string):
@@ -97,6 +101,7 @@ class TrainViewSet(viewsets.ModelViewSet):
 
 class CrewViewSet(viewsets.ModelViewSet):
     queryset = Crew.objects.all()
+    permission_classes = [IsAdminUser]
 
     def get_serializer_class(self):
         if self.action in ["list", "retrieve"]:
@@ -107,6 +112,12 @@ class CrewViewSet(viewsets.ModelViewSet):
 
 class JourneyViewSet(viewsets.ModelViewSet):
     queryset = Journey.objects.all()
+    permission_classes = [IsAuthenticated]
+
+    def get_permissions(self):
+        if self.action in ["list", "retrieve"]:
+            return [AllowAny()]
+        return super().get_permissions()
 
     def get_queryset(self):
         queryset = self.queryset
@@ -163,6 +174,7 @@ class OrderViewSet(viewsets.ModelViewSet):
             )
         )
     )
+    permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
         queryset = self.queryset
@@ -174,8 +186,6 @@ class OrderViewSet(viewsets.ModelViewSet):
                 "tickets__journey__route",
             )
         return queryset
-
-    permission_classes = [IsAuthenticated]
 
     def get_serializer_class(self):
         if self.action in ["list", "retrieve"]:
