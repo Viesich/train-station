@@ -116,14 +116,21 @@ class JourneyViewSet(viewsets.ModelViewSet):
                 queryset
                 .select_related()
                 .prefetch_related("crews", "tickets")
-                .annotate(tickets_available=F("train__cargo_num") * F("train__places_in_cargo") - Count("tickets"))
+                .annotate(
+                    tickets_available=F(
+                        "train__cargo_num"
+                    ) * F(
+                        "train__places_in_cargo"
+                    ) - Count(
+                        "tickets"
+                    )
+                ).order_by("id")
             )
         if self.action == "retrieve":
             return queryset.select_related("route", "train").prefetch_related(
                 "crews",
                 "tickets",
-            )
-        return queryset
+            ).order_by("id")
 
     def get_serializer_class(self):
         if self.action == "list":

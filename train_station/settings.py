@@ -10,6 +10,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.1/ref/settings/
 """
 import os
+from datetime import timedelta
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -142,7 +143,14 @@ AUTH_USER_MODEL = 'user.User'
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
-        'rest_framework.authentication.TokenAuthentication',
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
         'rest_framework.authentication.SessionAuthentication',
     ],
+}
+
+SIMPLE_JWT = {
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=60),  # Час дії access-токена
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=1),    # Час дії refresh-токена
+    'ROTATE_REFRESH_TOKENS': False,                # Чи генерувати новий refresh-токен при оновленні
+    'BLACKLIST_AFTER_ROTATION': True,              # Чи блокувати старий refresh-токен
 }

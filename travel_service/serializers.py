@@ -222,7 +222,7 @@ class OrderListSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Order
-        fields = ("ticket",)
+        fields = ("id", "created_at", "ticket",)
         ordering = ("created_at", )
 
     def get_ticket(self, obj):
