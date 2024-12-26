@@ -1,7 +1,9 @@
+from django.conf.urls.static import static
 from rest_framework import routers
 
 from django.urls import path, include
 
+from train_station import settings
 from travel_service.views import (
     StationViewSet,
     RouteViewSet,
