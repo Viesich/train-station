@@ -75,6 +75,12 @@ class TrainListSerializer(TrainSerializer):
     train_type = serializers.PrimaryKeyRelatedField(source="train_type.name", read_only=True)
 
 
+class TrainImageSerializer(TrainSerializer):
+    class Meta:
+        model = Train
+        fields = ("id", "image")
+
+
 class CrewSerializer(serializers.ModelSerializer):
     full_name = serializers.SerializerMethodField()
 

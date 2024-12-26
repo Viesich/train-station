@@ -1,6 +1,8 @@
 from django.db.models import Count, Prefetch, F
-from rest_framework import viewsets
-from rest_framework.permissions import IsAuthenticated, IsAdminUser, IsAuthenticatedOrReadOnly, AllowAny
+from rest_framework import viewsets, status
+from rest_framework.decorators import action
+from rest_framework.permissions import IsAuthenticated, IsAdminUser, AllowAny
+from rest_framework.response import Response
 
 from travel_service.models import (
     Order,
@@ -28,7 +30,7 @@ from travel_service.serializers import (
     OrderSerializer,
     OrderListSerializer,
     JourneyRetrieveSerializer,
-    TicketSerializer,
+    TicketSerializer, TrainImageSerializer,
 )
 
 
@@ -95,8 +97,25 @@ class TrainViewSet(viewsets.ModelViewSet):
     def get_serializer_class(self):
         if self.action in ["list", "retrieve"]:
             return TrainListSerializer
-        if self.action in ["create", "partial_update", "update"]:
+        elif self.action in ["create", "partial_update", "update"]:
             return TrainSerializer
+        elif self.action == "upload_image":
+            return TrainImageSerializer
+        return TrainSerializer
+
+    @action(
+        methods=["post",],
+        detail=True,
+        permission_classes=[IsAdminUser],
+        url_path="upload-image",
+    )
+    def upload_image(self, request, pk=None):
+        bus = self.get_object()
+        serializer = self.get_serializer(bus, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 class CrewViewSet(viewsets.ModelViewSet):
