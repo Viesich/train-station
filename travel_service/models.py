@@ -1,8 +1,10 @@
-from django.conf import settings
-from django.contrib.auth import get_user_model
-from django.db.models import UniqueConstraint
-from rest_framework.exceptions import ValidationError
+import pathlib
+import uuid
 
+from django.db.models import UniqueConstraint
+from django.utils.text import slugify
+
+from train_station import settings
 from user.models import User
 
 from django.db import models
@@ -134,12 +136,22 @@ class TrainType(models.Model):
         return self.name
 
 
+def train_image_path(instance: "Train", filename: str) -> pathlib.Path:
+    filename = (
+        f"{slugify(instance.name)}-{uuid.uuid4()}" + pathlib.Path(filename).suffix
+    )
+    return pathlib.Path("upload/trains/" / pathlib.Path(filename))
+
+
 class Train(models.Model):
     name = models.CharField(max_length=100, unique=True, db_index=True)
     cargo_num = models.IntegerField()
     places_in_cargo = models.IntegerField()
     train_type = models.ForeignKey("TrainType", on_delete=models.CASCADE)
-    image = models.ImageField(null=True, upload_to="uploads/")
+    image = models.ImageField(null=True, upload_to=train_image_path)
+
+    class Meta:
+        verbose_name_plural = "trains"
 
     def __str__(self):
         return self.name
