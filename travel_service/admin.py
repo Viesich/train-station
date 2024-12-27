@@ -8,7 +8,7 @@ from travel_service.models import (
     Route,
     Crew,
     Journey,
-    Order
+    Order,
 )
 
 

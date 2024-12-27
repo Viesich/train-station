@@ -24,7 +24,10 @@ class StationSerializer(serializers.ModelSerializer):
 
 class StationListSerializer(StationSerializer):
     class Meta(StationSerializer.Meta):
-        fields = ("id", "name", )
+        fields = (
+            "id",
+            "name",
+        )
 
 
 class StationDetailSerializer(StationSerializer):
@@ -33,12 +36,8 @@ class StationDetailSerializer(StationSerializer):
 
 
 class RouteSerializer(serializers.ModelSerializer):
-    source = serializers.PrimaryKeyRelatedField(
-        queryset=Station.objects.all()
-    )
-    destination = serializers.PrimaryKeyRelatedField(
-        queryset=Station.objects.all()
-    )
+    source = serializers.PrimaryKeyRelatedField(queryset=Station.objects.all())
+    destination = serializers.PrimaryKeyRelatedField(queryset=Station.objects.all())
 
     class Meta:
         model = Route
@@ -62,9 +61,7 @@ class TrainTypeSerializer(serializers.ModelSerializer):
 
 
 class TrainSerializer(serializers.ModelSerializer):
-    train_type = serializers.PrimaryKeyRelatedField(
-        queryset=TrainType.objects.all()
-    )
+    train_type = serializers.PrimaryKeyRelatedField(queryset=TrainType.objects.all())
 
     class Meta:
         model = Train
@@ -72,7 +69,9 @@ class TrainSerializer(serializers.ModelSerializer):
 
 
 class TrainListSerializer(TrainSerializer):
-    train_type = serializers.PrimaryKeyRelatedField(source="train_type.name", read_only=True)
+    train_type = serializers.PrimaryKeyRelatedField(
+        source="train_type.name", read_only=True
+    )
 
 
 class TrainImageSerializer(TrainSerializer):
@@ -115,9 +114,11 @@ class TicketSerializer(serializers.ModelSerializer):
             attrs["journey"].train.places_in_cargo,
             attrs["cargo"],
             attrs["journey"].train.cargo_num,
-            serializers.ValidationError
+            serializers.ValidationError,
         )
         return attrs
+
+
 #
 #
 # class TicketListSerializer(TicketSerializer):
@@ -142,8 +143,13 @@ class JourneyRetrieveSerializer(serializers.ModelSerializer):
     class Meta:
         model = Journey
         fields = (
-            "id", "route", "train", "departure_time", "arrival_time",
-            "crews", "free_seats_by_cargo",
+            "id",
+            "route",
+            "train",
+            "departure_time",
+            "arrival_time",
+            "crews",
+            "free_seats_by_cargo",
         )
 
     def get_crews(self, obj):
@@ -156,16 +162,15 @@ class JourneyRetrieveSerializer(serializers.ModelSerializer):
         return f"{obj.arrival_time.strftime('%Y-%m-%d %H:%M')}"
 
     def get_route(self, obj):
-        return f"{obj.route.source} -> {obj.route.destination} ({obj.route.distance} km)"
+        return (
+            f"{obj.route.source} -> {obj.route.destination} ({obj.route.distance} km)"
+        )
 
     def get_free_seats_by_cargo(self, obj):
         total_places_per_cargo = obj.train.places_in_cargo
         total_cargos = obj.train.cargo_num
 
-        taken_seats = (
-            obj.tickets.values("cargo", "seat")
-            .order_by("cargo", "seat")
-        )
+        taken_seats = obj.tickets.values("cargo", "seat").order_by("cargo", "seat")
 
         taken_seats_dict = defaultdict(set)
         for ticket in taken_seats:
@@ -177,10 +182,9 @@ class JourneyRetrieveSerializer(serializers.ModelSerializer):
             all_seats = set(range(1, total_places_per_cargo + 1))
             available_seats = sorted(all_seats - occupied_seats)
 
-            free_seats.append({
-                "cargo": cargo,
-                "free_seats": ", ".join(map(str, available_seats))
-            })
+            free_seats.append(
+                {"cargo": cargo, "free_seats": ", ".join(map(str, available_seats))}
+            )
 
         return free_seats
 
@@ -199,12 +203,18 @@ class OrderSerializer(serializers.ModelSerializer):
     class Meta:
         model = Order
         fields = ("id", "created_at", "user", "tickets")
-        read_only_fields = ("id", "created_at", "user",)
+        read_only_fields = (
+            "id",
+            "created_at",
+            "user",
+        )
 
     def validate(self, attrs):
         tickets = attrs.get("tickets")
         if not tickets or len(tickets) == 0:
-            raise serializers.ValidationError("The order must contain at least one ticket.")
+            raise serializers.ValidationError(
+                "The order must contain at least one ticket."
+            )
         return attrs
 
     def create(self, validated_data):
@@ -212,7 +222,9 @@ class OrderSerializer(serializers.ModelSerializer):
         user = self.context["request"].user
 
         if user.is_anonymous:
-            raise serializers.ValidationError("User must be logged in to create an order.")
+            raise serializers.ValidationError(
+                "User must be logged in to create an order."
+            )
 
         validated_data.pop("user", None)
 
@@ -228,19 +240,25 @@ class OrderListSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Order
-        fields = ("id", "created_at", "ticket",)
-        ordering = ("created_at", )
+        fields = (
+            "id",
+            "created_at",
+            "ticket",
+        )
+        ordering = ("created_at",)
 
     def get_ticket(self, obj):
         tickets = obj.tickets.all()
         return [
             {
                 "journey": f"{ticket.journey.route.source.name} -> "
-                           f"{ticket.journey.route.destination.name} ("
-                           f"{ticket.journey.train.name})",
+                f"{ticket.journey.route.destination.name} ("
+                f"{ticket.journey.train.name})",
                 "cargo": ticket.cargo,
                 "seat": ticket.seat,
-                "departure_time": ticket.journey.departure_time.strftime("%Y-%m-%d %H:%M"),
+                "departure_time": ticket.journey.departure_time.strftime(
+                    "%Y-%m-%d %H:%M"
+                ),
                 "arrival_time": ticket.journey.arrival_time.strftime("%Y-%m-%d %H:%M"),
             }
             for ticket in tickets

@@ -30,7 +30,8 @@ from travel_service.serializers import (
     OrderSerializer,
     OrderListSerializer,
     JourneyRetrieveSerializer,
-    TicketSerializer, TrainImageSerializer,
+    TicketSerializer,
+    TrainImageSerializer,
 )
 
 
@@ -56,6 +57,7 @@ class StationViewSet(viewsets.ModelViewSet):
 class RouteViewSet(viewsets.ModelViewSet):
     queryset = Route.objects.all()
     permission_classes = [IsAdminUser]
+
     def get_queryset(self):
         queryset = self.queryset
         if self.action in ("list", "retrieve"):
@@ -104,14 +106,16 @@ class TrainViewSet(viewsets.ModelViewSet):
         return TrainSerializer
 
     @action(
-        methods=["post",],
+        methods=[
+            "post",
+        ],
         detail=True,
         permission_classes=[IsAdminUser],
         url_path="upload-image",
     )
     def upload_image(self, request, pk=None):
-        bus = self.get_object()
-        serializer = self.get_serializer(bus, data=request.data)
+        train = self.get_object()
+        serializer = self.get_serializer(train, data=request.data)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_200_OK)
@@ -143,24 +147,24 @@ class JourneyViewSet(viewsets.ModelViewSet):
 
         if self.action == "list":
             return (
-                queryset
-                .select_related()
+                queryset.select_related()
                 .prefetch_related("crews", "tickets")
                 .annotate(
-                    tickets_available=F(
-                        "train__cargo_num"
-                    ) * F(
-                        "train__places_in_cargo"
-                    ) - Count(
-                        "tickets"
-                    )
-                ).order_by("id")
+                    tickets_available=F("train__cargo_num")
+                    * F("train__places_in_cargo")
+                    - Count("tickets")
+                )
+                .order_by("id")
             )
         if self.action == "retrieve":
-            return queryset.select_related("route", "train").prefetch_related(
-                "crews",
-                "tickets",
-            ).order_by("id")
+            return (
+                queryset.select_related("route", "train")
+                .prefetch_related(
+                    "crews",
+                    "tickets",
+                )
+                .order_by("id")
+            )
 
     def get_serializer_class(self):
         if self.action == "list":
@@ -189,8 +193,8 @@ class OrderViewSet(viewsets.ModelViewSet):
             queryset=Ticket.objects.select_related(
                 "journey__route__source",
                 "journey__route__destination",
-                "journey__train"
-            )
+                "journey__train",
+            ),
         )
     )
     permission_classes = [IsAuthenticated]

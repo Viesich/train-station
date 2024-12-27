@@ -22,14 +22,10 @@ class Station(models.Model):
 
 class Route(models.Model):
     source = models.ForeignKey(
-        "Station",
-        on_delete=models.CASCADE,
-        related_name="source_routes"
+        "Station", on_delete=models.CASCADE, related_name="source_routes"
     )
     destination = models.ForeignKey(
-        "Station",
-        on_delete=models.CASCADE,
-        related_name="destination_routes"
+        "Station", on_delete=models.CASCADE, related_name="destination_routes"
     )
     distance = models.FloatField()
 
@@ -44,10 +40,7 @@ class Route(models.Model):
 
 class Order(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
-    user = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        on_delete=models.CASCADE
-    )
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
 
     class Meta:
         ordering = ("id",)
@@ -59,31 +52,35 @@ class Order(models.Model):
 class Ticket(models.Model):
     cargo = models.IntegerField()
     seat = models.IntegerField()
-    journey = models.ForeignKey("Journey", on_delete=models.CASCADE, related_name="tickets")
-    order = models.ForeignKey(Order, on_delete=models.CASCADE, null=False, related_name="tickets")
+    journey = models.ForeignKey(
+        "Journey", on_delete=models.CASCADE, related_name="tickets"
+    )
+    order = models.ForeignKey(
+        Order, on_delete=models.CASCADE, null=False, related_name="tickets"
+    )
 
     class Meta:
         constraints = [
             UniqueConstraint(
-                fields=["cargo", "seat", "journey"],
-                name="unique_cargo_seat_journey"
-                )
+                fields=["cargo", "seat", "journey"], name="unique_cargo_seat_journey"
+            )
         ]
-        ordering = ("cargo", "seat", )
+        ordering = (
+            "cargo",
+            "seat",
+        )
 
     @staticmethod
-    def validate_seat_and_cargo(seat: int, place_in_cargo: int, cargo: int, cargo_num: int, error_to_raise):
+    def validate_seat_and_cargo(
+        seat: int, place_in_cargo: int, cargo: int, cargo_num: int, error_to_raise
+    ):
         if not (1 <= seat <= place_in_cargo):
             raise error_to_raise(
-                {
-                    "seat": f"seat must be in range [1, {place_in_cargo}], not {seat}"
-                }
+                {"seat": f"seat must be in range [1, {place_in_cargo}], not {seat}"}
             )
         if not (1 <= cargo <= cargo_num):
             raise error_to_raise(
-                {
-                    "cargo": f"Cargo must be in range [1, {cargo_num}], not {cargo}"
-                }
+                {"cargo": f"Cargo must be in range [1, {cargo_num}], not {cargo}"}
             )
 
     def clean(self):
@@ -92,7 +89,7 @@ class Ticket(models.Model):
             self.journey.train.places_in_cargo,
             self.cargo,
             self.journey.train.cargo_num,
-            ValueError
+            ValueError,
         )
 
     def save(
