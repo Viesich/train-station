@@ -1,4 +1,5 @@
 from django.db.models import Count, Prefetch, F
+from drf_spectacular.utils import extend_schema, OpenApiParameter
 from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated, IsAdminUser, AllowAny
@@ -113,6 +114,11 @@ class TrainViewSet(viewsets.ModelViewSet):
         permission_classes=[IsAdminUser],
         url_path="upload-image",
     )
+    @extend_schema(
+        request=TrainImageSerializer,
+        responses={200: TrainSerializer},
+        description="Upload an image for a train",
+    )
     def upload_image(self, request, pk=None):
         train = self.get_object()
         serializer = self.get_serializer(train, data=request.data)
@@ -120,6 +126,19 @@ class TrainViewSet(viewsets.ModelViewSet):
             serializer.save()
             return Response(serializer.data, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    @extend_schema(
+        parameters=[
+            OpenApiParameter(
+                "train_type",
+                type={"type": "array", "items": {"type": "number"}},
+                description="Filter by train-type id (ex. ?train-type=2,3)",
+            )
+        ]
+    )
+    def list(self, request, *args, **kwargs):
+        """Get list of all trains"""
+        return super().list(request, *args, **kwargs)
 
 
 class CrewViewSet(viewsets.ModelViewSet):
@@ -131,6 +150,14 @@ class CrewViewSet(viewsets.ModelViewSet):
             return CrewSerializer
         if self.action in ["create", "partial_update", "update"]:
             return CrewCreateSerializer
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        if serializer.is_valid():
+            crew = serializer.save()
+            response_serializer = CrewSerializer(crew)
+            return Response(response_serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 class JourneyViewSet(viewsets.ModelViewSet):
