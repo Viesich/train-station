@@ -65,7 +65,7 @@ class TrainSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Train
-        fields = ("id", "name", "cargo_num", "places_in_cargo", "train_type")
+        fields = ("id", "name", "cargo_num", "places_in_cargo", "train_type", "image")
 
 
 class TrainListSerializer(TrainSerializer):
