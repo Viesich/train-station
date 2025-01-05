@@ -1,9 +1,10 @@
 from django.db.models import Count, Prefetch, F
 from drf_spectacular.utils import extend_schema, OpenApiParameter
-from rest_framework import viewsets, status
+from rest_framework import viewsets, status, mixins
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated, IsAdminUser, AllowAny
 from rest_framework.response import Response
+from rest_framework.viewsets import GenericViewSet
 
 from travel_service.models import (
     Order,
@@ -78,7 +79,11 @@ class TrainTypeViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAdminUser]
 
 
-class TrainViewSet(viewsets.ModelViewSet):
+class TrainViewSet(mixins.CreateModelMixin,
+                   mixins.RetrieveModelMixin,
+                   mixins.UpdateModelMixin,
+                   mixins.ListModelMixin,
+                   GenericViewSet):
     queryset = Train.objects.all()
     permission_classes = [IsAdminUser]
 
