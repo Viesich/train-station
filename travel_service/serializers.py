@@ -1,7 +1,6 @@
 from collections import defaultdict
 
 from django.db import transaction
-from django.db.models import Prefetch, Count
 from rest_framework import serializers
 
 from travel_service.models import (
@@ -19,7 +18,7 @@ from travel_service.models import (
 class StationSerializer(serializers.ModelSerializer):
     class Meta:
         model = Station
-        fields = ("name", "latitude", "longitude")
+        fields = ("id", "name", "latitude", "longitude")
 
 
 class StationListSerializer(StationSerializer):
@@ -69,8 +68,8 @@ class TrainSerializer(serializers.ModelSerializer):
 
 
 class TrainListSerializer(TrainSerializer):
-    train_type = serializers.PrimaryKeyRelatedField(
-        source="train_type.name", read_only=True
+    train_type = serializers.SlugRelatedField(
+        read_only=True, slug_field="name",
     )
 
 
@@ -119,12 +118,6 @@ class TicketSerializer(serializers.ModelSerializer):
         return attrs
 
 
-#
-#
-# class TicketListSerializer(TicketSerializer):
-#     journey = JourneyListSerializer(read_only=True)
-
-
 class JourneySerializer(serializers.ModelSerializer):
 
     class Meta:
@@ -152,21 +145,26 @@ class JourneyRetrieveSerializer(serializers.ModelSerializer):
             "free_seats_by_cargo",
         )
 
-    def get_crews(self, obj):
+    @staticmethod
+    def get_crews(obj):
         return [f"{crew.first_name} {crew.last_name}" for crew in obj.crews.all()]
 
-    def get_departure_time(self, obj):
+    @staticmethod
+    def get_departure_time(obj):
         return f"{obj.departure_time.strftime('%Y-%m-%d %H:%M')}"
 
-    def get_arrival_time(self, obj):
+    @staticmethod
+    def get_arrival_time(obj):
         return f"{obj.arrival_time.strftime('%Y-%m-%d %H:%M')}"
 
-    def get_route(self, obj):
+    @staticmethod
+    def get_route(obj):
         return (
             f"{obj.route.source} -> {obj.route.destination} ({obj.route.distance} km)"
         )
 
-    def get_free_seats_by_cargo(self, obj):
+    @staticmethod
+    def get_free_seats_by_cargo(obj):
         total_places_per_cargo = obj.train.places_in_cargo
         total_cargos = obj.train.cargo_num
 
@@ -190,11 +188,14 @@ class JourneyRetrieveSerializer(serializers.ModelSerializer):
 
 
 class JourneyListSerializer(JourneyRetrieveSerializer):
-    tickets_available = serializers.IntegerField(read_only=True)
+    tickets_available = serializers.SerializerMethodField()
 
     class Meta:
         model = Journey
         fields = ("id", "route", "departure_time", "tickets_available")
+
+    def get_tickets_available(self, obj):
+        return obj.train.cargo_num * obj.train.places_in_cargo
 
 
 class OrderSerializer(serializers.ModelSerializer):
@@ -247,7 +248,8 @@ class OrderListSerializer(serializers.ModelSerializer):
         )
         ordering = ("created_at",)
 
-    def get_ticket(self, obj):
+    @staticmethod
+    def get_ticket(obj):
         tickets = obj.tickets.all()
         return [
             {
