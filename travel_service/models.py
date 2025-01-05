@@ -27,7 +27,7 @@ class Route(models.Model):
     destination = models.ForeignKey(
         "Station", on_delete=models.CASCADE, related_name="destination_routes"
     )
-    distance = models.FloatField()
+    distance = models.IntegerField()
 
     class Meta:
         indexes = [
@@ -127,7 +127,7 @@ class Journey(models.Model):
 
 
 class TrainType(models.Model):
-    name = models.CharField(max_length=100, unique=True)
+    name = models.CharField(max_length=100)
 
     def __str__(self):
         return self.name
