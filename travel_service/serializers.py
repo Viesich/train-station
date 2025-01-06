@@ -122,7 +122,7 @@ class JourneySerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Journey
-        fields = ("route", "train", "crews", "departure_time", "arrival_time")
+        fields = ("id", "route", "train", "crews", "departure_time", "arrival_time")
 
 
 class JourneyRetrieveSerializer(serializers.ModelSerializer):
@@ -234,6 +234,16 @@ class OrderSerializer(serializers.ModelSerializer):
             for ticket_data in tickets_data:
                 Ticket.objects.create(order=order, **ticket_data)
             return order
+
+    def update(self, instance, validated_data):
+        instance.user = validated_data.get("user", instance.user)
+        instance.save()
+        tickets_data = validated_data.get("tickets", None)
+        if tickets_data:
+            instance.tickets.all().delete()
+            for ticket_data in tickets_data:
+                Ticket.objects.create(order=instance, **ticket_data)
+        return instance
 
 
 class OrderListSerializer(serializers.ModelSerializer):
