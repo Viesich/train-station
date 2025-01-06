@@ -1,8 +1,10 @@
 from django.contrib.auth import get_user_model
 from django.test import TestCase
+
 from rest_framework.reverse import reverse
 from rest_framework.test import APIClient
 from rest_framework import status
+
 from travel_service.models import Station
 from travel_service.serializers import (
     StationListSerializer,
@@ -12,15 +14,16 @@ from travel_service.serializers import (
 
 
 STATION_URL = reverse("travel_service:station-list")
-
 PYLOAD = {
-    "name": f"Test_name",
+    "name": "Test_name",
     "latitude": 40,
     "longitude": 50,
 }
 
+
 def detail_url(train_id):
     return reverse("travel_service:station-detail", args=(train_id,))
+
 
 def sample_station(**params) -> Station:
     defaults = {

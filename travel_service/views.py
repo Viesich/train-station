@@ -1,9 +1,15 @@
-from django.db.models import Count, Prefetch, F
+from typing import Type
+
+from django.db.models import Count, Prefetch, F, QuerySet
+
 from drf_spectacular.utils import extend_schema, OpenApiParameter
+
 from rest_framework import viewsets, status, mixins
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated, IsAdminUser, AllowAny
+from rest_framework.request import Request
 from rest_framework.response import Response
+from rest_framework.serializers import BaseSerializer, Serializer
 from rest_framework.viewsets import GenericViewSet
 
 from travel_service.models import (
@@ -41,13 +47,13 @@ class StationViewSet(viewsets.ModelViewSet):
     queryset = Station.objects.all()
     permission_classes = [IsAdminUser]
 
-    def get_queryset(self):
+    def get_queryset(self) -> QuerySet:
         queryset = self.queryset
         if self.action in ("list", "retrieve"):
             return queryset.select_related()
         return queryset
 
-    def get_serializer_class(self):
+    def get_serializer_class(self) -> Type[Serializer]:
         if self.action == "list":
             return StationListSerializer
         if self.action == "retrieve":
@@ -60,13 +66,13 @@ class RouteViewSet(viewsets.ModelViewSet):
     queryset = Route.objects.all()
     permission_classes = [IsAdminUser]
 
-    def get_queryset(self):
+    def get_queryset(self) -> QuerySet:
         queryset = self.queryset
         if self.action in ("list", "retrieve"):
             return queryset.select_related()
         return queryset
 
-    def get_serializer_class(self):
+    def get_serializer_class(self) -> Type[Serializer]:
         if self.action in ["list", "retrieve"]:
             return RouteListSerializer
         if self.action in ["create", "partial_update", "update"]:
@@ -79,19 +85,21 @@ class TrainTypeViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAdminUser]
 
 
-class TrainViewSet(mixins.CreateModelMixin,
-                   mixins.RetrieveModelMixin,
-                   mixins.UpdateModelMixin,
-                   mixins.ListModelMixin,
-                   GenericViewSet):
+class TrainViewSet(
+    mixins.CreateModelMixin,
+    mixins.RetrieveModelMixin,
+    mixins.UpdateModelMixin,
+    mixins.ListModelMixin,
+    GenericViewSet,
+):
     queryset = Train.objects.all()
     permission_classes = [IsAdminUser]
 
     @staticmethod
-    def _params_to_inits(query_string):
+    def _params_to_inits(query_string: str) -> list:
         return [int(str_id) for str_id in query_string.split(",")]
 
-    def get_queryset(self):
+    def get_queryset(self) -> QuerySet:
         queryset = self.queryset
         train_type = self.request.query_params.get("train_type")
 
@@ -102,7 +110,7 @@ class TrainViewSet(mixins.CreateModelMixin,
             return queryset.select_related()
         return queryset.distinct()
 
-    def get_serializer_class(self):
+    def get_serializer_class(self) -> Type[BaseSerializer]:
         if self.action in ["list", "retrieve"]:
             return TrainListSerializer
         elif self.action in ["create", "partial_update", "update"]:
@@ -124,7 +132,7 @@ class TrainViewSet(mixins.CreateModelMixin,
         responses={200: TrainSerializer},
         description="Upload an image for a train",
     )
-    def upload_image(self, request, pk=None):
+    def upload_image(self, request: Request, pk: int = None) -> Response:
         train = self.get_object()
         serializer = self.get_serializer(train, data=request.data)
         if serializer.is_valid():
@@ -141,8 +149,7 @@ class TrainViewSet(mixins.CreateModelMixin,
             )
         ]
     )
-    def list(self, request, *args, **kwargs):
-        """Get list of all trains"""
+    def list(self, request: Request, *args, **kwargs) -> list:
         return super().list(request, *args, **kwargs)
 
 
@@ -150,13 +157,13 @@ class CrewViewSet(viewsets.ModelViewSet):
     queryset = Crew.objects.all()
     permission_classes = [IsAdminUser]
 
-    def get_serializer_class(self):
+    def get_serializer_class(self) -> Type[Serializer]:
         if self.action in ["list", "retrieve"]:
             return CrewSerializer
         if self.action in ["create", "partial_update", "update"]:
             return CrewCreateSerializer
 
-    def create(self, request, *args, **kwargs):
+    def create(self, request: Request, *args, **kwargs) -> Response:
         serializer = self.get_serializer(data=request.data)
         if serializer.is_valid():
             crew = serializer.save()
@@ -169,12 +176,12 @@ class JourneyViewSet(viewsets.ModelViewSet):
     queryset = Journey.objects.all()
     permission_classes = [IsAuthenticated]
 
-    def get_permissions(self):
+    def get_permissions(self) -> List[BasePermission]:
         if self.action in ["list", "retrieve"]:
             return [AllowAny()]
         return super().get_permissions()
 
-    def get_queryset(self):
+    def get_queryset(self) -> QuerySet:
         queryset = self.queryset
 
         if self.action == "list":
@@ -182,9 +189,7 @@ class JourneyViewSet(viewsets.ModelViewSet):
                 queryset.select_related()
                 .prefetch_related("crews", "tickets")
                 .annotate(
-                    tickets_available=F("train__cargo_num")
-                    * F("train__places_in_cargo")
-                    - Count("tickets")
+                    tickets_available=F("train__cargo_num") * F("train__places_in_cargo") - Count("tickets")
                 )
                 .order_by("id")
             )
@@ -198,7 +203,7 @@ class JourneyViewSet(viewsets.ModelViewSet):
                 .order_by("id")
             )
 
-    def get_serializer_class(self):
+    def get_serializer_class(self) -> Type[Serializer]:
         if self.action == "list":
             return JourneyListSerializer
         if self.action == "retrieve":
@@ -209,7 +214,7 @@ class JourneyViewSet(viewsets.ModelViewSet):
 class TicketViewSet(viewsets.ModelViewSet):
     queryset = Ticket.objects.all()
 
-    def get_queryset(self):
+    def get_queryset(self) -> QuerySet:
         queryset = self.queryset
         if self.action == "list":
             return queryset.select_related()
@@ -231,7 +236,7 @@ class OrderViewSet(viewsets.ModelViewSet):
     )
     permission_classes = [IsAuthenticated]
 
-    def get_queryset(self):
+    def get_queryset(self) -> QuerySet:
         queryset = self.queryset
         if self.action == "list":
             return queryset.select_related().prefetch_related(
@@ -242,12 +247,12 @@ class OrderViewSet(viewsets.ModelViewSet):
             )
         return queryset
 
-    def get_serializer_class(self):
+    def get_serializer_class(self) -> Type[Serializer]:
         if self.action in ["list", "retrieve"]:
             return OrderListSerializer
         if self.action in ["create", "partial_update", "update"]:
             return OrderSerializer
         return OrderListSerializer
 
-    def perform_create(self, serializer):
+    def perform_create(self, serializer: BaseSerializer):
         serializer.save(user=self.request.user)

@@ -1,6 +1,8 @@
 from collections import defaultdict
+from typing import Dict, Any
 
 from django.db import transaction
+
 from rest_framework import serializers
 
 from travel_service.models import (
@@ -49,7 +51,7 @@ class RouteListSerializer(RouteSerializer):
     distance = serializers.SerializerMethodField()
 
     @staticmethod
-    def get_distance(obj):
+    def get_distance(obj: Route) -> str:
         return f"{obj.distance} km"
 
 
@@ -69,7 +71,8 @@ class TrainSerializer(serializers.ModelSerializer):
 
 class TrainListSerializer(TrainSerializer):
     train_type = serializers.SlugRelatedField(
-        read_only=True, slug_field="name",
+        read_only=True,
+        slug_field="name",
     )
 
 
@@ -87,7 +90,7 @@ class CrewSerializer(serializers.ModelSerializer):
         fields = ("id", "full_name")
 
     @staticmethod
-    def get_full_name(obj):
+    def get_full_name(obj: Crew) -> str:
         return f"{obj.first_name} {obj.last_name}"
 
 
@@ -107,7 +110,7 @@ class TicketSerializer(serializers.ModelSerializer):
             "journey",
         )
 
-    def validate(self, attrs):
+    def validate(self, attrs: dict) -> dict:
         Ticket.validate_seat_and_cargo(
             attrs["seat"],
             attrs["journey"].train.places_in_cargo,
@@ -146,25 +149,25 @@ class JourneyRetrieveSerializer(serializers.ModelSerializer):
         )
 
     @staticmethod
-    def get_crews(obj):
+    def get_crews(obj: Journey) -> list:
         return [f"{crew.first_name} {crew.last_name}" for crew in obj.crews.all()]
 
     @staticmethod
-    def get_departure_time(obj):
+    def get_departure_time(obj: Journey) -> str:
         return f"{obj.departure_time.strftime('%Y-%m-%d %H:%M')}"
 
     @staticmethod
-    def get_arrival_time(obj):
+    def get_arrival_time(obj: Journey) -> str:
         return f"{obj.arrival_time.strftime('%Y-%m-%d %H:%M')}"
 
     @staticmethod
-    def get_route(obj):
+    def get_route(obj: Journey) -> str:
         return (
             f"{obj.route.source} -> {obj.route.destination} ({obj.route.distance} km)"
         )
 
     @staticmethod
-    def get_free_seats_by_cargo(obj):
+    def get_free_seats_by_cargo(obj: Journey) -> list:
         total_places_per_cargo = obj.train.places_in_cargo
         total_cargos = obj.train.cargo_num
 
@@ -194,7 +197,7 @@ class JourneyListSerializer(JourneyRetrieveSerializer):
         model = Journey
         fields = ("id", "route", "departure_time", "tickets_available")
 
-    def get_tickets_available(self, obj):
+    def get_tickets_available(self, obj: Journey) -> int:
         return obj.train.cargo_num * obj.train.places_in_cargo
 
 
@@ -210,7 +213,7 @@ class OrderSerializer(serializers.ModelSerializer):
             "user",
         )
 
-    def validate(self, attrs):
+    def validate(self, attrs: dict) -> dict:
         tickets = attrs.get("tickets")
         if not tickets or len(tickets) == 0:
             raise serializers.ValidationError(
@@ -218,7 +221,7 @@ class OrderSerializer(serializers.ModelSerializer):
             )
         return attrs
 
-    def create(self, validated_data):
+    def create(self, validated_data: dict) -> Order:
         tickets_data = validated_data.pop("tickets")
         user = self.context["request"].user
 
@@ -235,7 +238,7 @@ class OrderSerializer(serializers.ModelSerializer):
                 Ticket.objects.create(order=order, **ticket_data)
             return order
 
-    def update(self, instance, validated_data):
+    def update(self, instance: Order, validated_data: dict) -> Order:
         instance.user = validated_data.get("user", instance.user)
         instance.save()
         tickets_data = validated_data.get("tickets", None)
@@ -259,7 +262,7 @@ class OrderListSerializer(serializers.ModelSerializer):
         ordering = ("created_at",)
 
     @staticmethod
-    def get_ticket(obj):
+    def get_ticket(obj: Order) -> list:
         tickets = obj.tickets.all()
         return [
             {

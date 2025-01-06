@@ -3,6 +3,8 @@ from django.utils.translation import gettext as _
 
 from rest_framework import serializers
 
+from user.models import User
+
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
@@ -18,7 +20,7 @@ class UserSerializer(serializers.ModelSerializer):
             },
         }
 
-    def create(self, validated_data):
+    def create(self, validated_data: dict) -> User:
         return get_user_model().objects.create_user(**validated_data)
 
     def update(self, instance, validated_data):
@@ -40,7 +42,7 @@ class AuthTokenSerializer(serializers.Serializer):
     )
     token = serializers.CharField(label=_("Token"), read_only=True)
 
-    def validate(self, attrs):
+    def validate(self, attrs: dict) -> dict:
         email = attrs.get("email")
         password = attrs.get("password")
 

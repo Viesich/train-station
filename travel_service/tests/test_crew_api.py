@@ -1,16 +1,18 @@
 from django.contrib.auth import get_user_model
 from django.test import TestCase
+
 from rest_framework.reverse import reverse
 from rest_framework.test import APIClient
 from rest_framework import status
 
 from travel_service.models import Crew
-from travel_service.serializers import CrewSerializer, CrewCreateSerializer
+from travel_service.serializers import CrewSerializer
+
 
 CREW_URL = reverse("travel_service:crew-list")
 
 
-def detail_url(crew_id):
+def detail_url(crew_id: int) -> str:
     return reverse("travel_service:crew-detail", args=(crew_id,))
 
 

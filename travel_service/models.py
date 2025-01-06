@@ -1,14 +1,13 @@
 import pathlib
+
 import uuid
 
 from django.db.models import UniqueConstraint
 from django.utils.text import slugify
-
-from train_station import settings
-from user.models import User
-
 from django.db import models
 from django.utils import timezone
+
+from train_station import settings
 
 
 class Station(models.Model):
@@ -16,7 +15,7 @@ class Station(models.Model):
     latitude = models.FloatField()
     longitude = models.FloatField()
 
-    def __str__(self):
+    def __str__(self) -> str:
         return self.name
 
 
@@ -34,7 +33,7 @@ class Route(models.Model):
             models.Index(fields=["source", "destination"]),
         ]
 
-    def __str__(self):
+    def __str__(self) -> str:
         return f"{self.source_id} -> {self.destination_id}"
 
 
@@ -45,7 +44,7 @@ class Order(models.Model):
     class Meta:
         ordering = ("id",)
 
-    def __str__(self):
+    def __str__(self) -> str:
         return f"Order #{self.id}"
 
 
@@ -105,7 +104,7 @@ class Ticket(models.Model):
             force_insert, force_update, using, update_fields
         )
 
-    def __str__(self):
+    def __str__(self) -> str:
         return f"{self.journey_id} -> {self.cargo}"
 
 
@@ -122,14 +121,14 @@ class Journey(models.Model):
             models.Index(fields=["arrival_time"]),
         ]
 
-    def __str__(self):
+    def __str__(self) -> str:
         return f"{self.train_id} -> {self.route_id}"
 
 
 class TrainType(models.Model):
     name = models.CharField(max_length=100)
 
-    def __str__(self):
+    def __str__(self) -> str:
         return self.name
 
 

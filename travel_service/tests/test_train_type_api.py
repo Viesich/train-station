@@ -1,11 +1,13 @@
 from django.contrib.auth import get_user_model
 from django.test import TestCase
+
 from rest_framework import status
 from rest_framework.reverse import reverse
 from rest_framework.test import APIClient
 
 from travel_service.models import TrainType
 from travel_service.serializers import TrainTypeSerializer
+
 
 TRAIN_TYPE_URL = reverse("travel_service:traintype-list")
 
@@ -72,7 +74,7 @@ class AdminAuthenticateTrainTypeApiTests(TestCase):
 
         payload = {"name": "Kyiv"}
 
-        res = self.client.post(TRAIN_TYPE_URL, payload, format='json')
-        train_type = TrainType.objects.get(id=res.data['id'])
+        res = self.client.post(TRAIN_TYPE_URL, payload, format="json")
+        train_type = TrainType.objects.get(id=res.data["id"])
         self.assertEqual(train_type.name, "Kyiv")
         self.assertEqual(res.status_code, status.HTTP_201_CREATED)

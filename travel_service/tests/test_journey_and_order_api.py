@@ -2,16 +2,18 @@ from datetime import datetime, timezone
 
 from django.contrib.auth import get_user_model
 from django.test import TestCase
+
 from rest_framework.reverse import reverse
 from rest_framework.test import APIClient
 from rest_framework import status
+
 from travel_service.models import Journey, Train, Route, Crew, Station, TrainType, Order
 from travel_service.serializers import JourneyListSerializer, JourneyRetrieveSerializer
 from travel_service.views import JourneyViewSet
 
+
 JOURNEY_URL = reverse("travel_service:journey-list")
 ORDERS_URL = reverse("travel_service:order-list")
-
 PAYLOAD = {
     "route": None,
     "train": None,

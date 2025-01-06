@@ -5,7 +5,7 @@ from rest_framework.test import APIClient
 from rest_framework import status
 
 from travel_service.models import Train, TrainType
-from travel_service.serializers import TrainSerializer, TrainTypeSerializer, TrainListSerializer
+from travel_service.serializers import TrainSerializer, TrainListSerializer
 from travel_service.views import TrainViewSet
 
 
@@ -55,7 +55,7 @@ class AuthenticatedTrainApiTests(TestCase):
             "name": "Test_name",
             "cargo_num": 10,
             "places_in_cargo": 50,
-            "train_type": train_type
+            "train_type": train_type,
         }
         res = self.client.post(TRAIN_URL, pyload)
         self.assertEqual(res.status_code, status.HTTP_403_FORBIDDEN)
@@ -108,7 +108,7 @@ class AdminAuthenticateTrainApiTests(TestCase):
             "name": "Test_name",
             "cargo_num": 10,
             "places_in_cargo": 50,
-            "train_type": train_type.id
+            "train_type": train_type.id,
         }
         res = self.client.post(TRAIN_URL, pyload)
         train = Train.objects.get(id=res.data["id"])

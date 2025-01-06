@@ -1,16 +1,15 @@
-from datetime import datetime, timezone
-
 from django.contrib.auth import get_user_model
 from django.test import TestCase
+
 from rest_framework.reverse import reverse
 from rest_framework.test import APIClient
 from rest_framework import status
-from travel_service.models import Journey, Train, Route, Crew, Station, TrainType
-from travel_service.serializers import JourneyListSerializer, JourneyRetrieveSerializer, RouteListSerializer
-from travel_service.views import JourneyViewSet, RouteViewSet
+
+from travel_service.models import Route, Station
+from travel_service.serializers import RouteListSerializer
+
 
 ROUTE_URL = reverse("travel_service:route-list")
-
 PAYLOAD = {
     "source": None,
     "destination": None,
@@ -54,7 +53,9 @@ class AuthenticatedRouteApiTests(TestCase):
     def test_create_route_forbidden(self):
         pyload = {
             "source": Station.objects.create(name="Kyiv", latitude=50, longitude=50),
-            "destination": Station.objects.create(name="Odesa", latitude=60, longitude=50),
+            "destination": Station.objects.create(
+                name="Odesa", latitude=60, longitude=50
+            ),
             "distance": 100,
         }
         res = self.client.post(ROUTE_URL, pyload)
@@ -98,9 +99,9 @@ class AdminAuthenticateRouteApiTests(TestCase):
             "distance": 100,
         }
 
-        res = self.client.post(ROUTE_URL, payload, format='json')
+        res = self.client.post(ROUTE_URL, payload, format="json")
         self.assertEqual(res.status_code, status.HTTP_201_CREATED)
-        route = Route.objects.get(id=res.data['id'])
+        route = Route.objects.get(id=res.data["id"])
         self.assertEqual(route.source.id, city_A.id)
         self.assertEqual(route.destination.id, city_B.id)
         self.assertEqual(route.distance, 100)
