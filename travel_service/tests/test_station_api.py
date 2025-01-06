@@ -71,13 +71,14 @@ class AdminAuthenticateTrainApiTests(TestCase):
 
     def test_stations_list(self):
         sample_station()
-        res = self.client.get(STATION_URL)
         stations = Station.objects.all()
         serializer = StationListSerializer(stations, many=True)
+        with self.assertNumQueries(2):
+            res = self.client.get(STATION_URL)
         self.assertEqual(res.data["results"], serializer.data)
         self.assertEqual(res.status_code, status.HTTP_200_OK)
 
-    def test_retrieve_train_detail(self):
+    def test_retrieve_station_detail(self):
         station = sample_station()
         url = detail_url(station.id)
         res = self.client.get(url)
