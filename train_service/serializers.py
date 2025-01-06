@@ -5,7 +5,7 @@ from django.db import transaction
 
 from rest_framework import serializers
 
-from travel_service.models import (
+from train_service.models import (
     Order,
     Station,
     Route,

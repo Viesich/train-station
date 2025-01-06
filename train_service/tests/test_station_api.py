@@ -5,15 +5,15 @@ from rest_framework.reverse import reverse
 from rest_framework.test import APIClient
 from rest_framework import status
 
-from travel_service.models import Station
-from travel_service.serializers import (
+from train_service.models import Station
+from train_service.serializers import (
     StationListSerializer,
     StationDetailSerializer,
     StationSerializer,
 )
 
 
-STATION_URL = reverse("travel_service:station-list")
+STATION_URL = reverse("train_service:station-list")
 PYLOAD = {
     "name": "Test_name",
     "latitude": 40,
@@ -22,7 +22,7 @@ PYLOAD = {
 
 
 def detail_url(train_id):
-    return reverse("travel_service:station-detail", args=(train_id,))
+    return reverse("train_service:station-detail", args=(train_id,))
 
 
 def sample_station(**params) -> Station:

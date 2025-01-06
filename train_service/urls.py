@@ -2,7 +2,7 @@ from rest_framework import routers
 
 from django.urls import path, include
 
-from travel_service.views import (
+from train_service.views import (
     StationViewSet,
     RouteViewSet,
     TrainTypeViewSet,
@@ -12,7 +12,7 @@ from travel_service.views import (
     OrderViewSet,
 )
 
-app_name = "travel_service"
+app_name = "train_service"
 
 router = routers.DefaultRouter()
 

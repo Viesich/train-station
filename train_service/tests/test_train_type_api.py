@@ -5,15 +5,15 @@ from rest_framework import status
 from rest_framework.reverse import reverse
 from rest_framework.test import APIClient
 
-from travel_service.models import TrainType
-from travel_service.serializers import TrainTypeSerializer
+from train_service.models import TrainType
+from train_service.serializers import TrainTypeSerializer
 
 
-TRAIN_TYPE_URL = reverse("travel_service:traintype-list")
+TRAIN_TYPE_URL = reverse("train_service:traintype-list")
 
 
 def detail_url(train_type_id):
-    return reverse("travel_service:traintype-detail", args=(train_type_id,))
+    return reverse("train_service:traintype-detail", args=(train_type_id,))
 
 
 class UnauthenticatedTrainTypeApiTests(TestCase):

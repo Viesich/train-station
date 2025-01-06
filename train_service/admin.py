@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from travel_service.models import (
+from train_service.models import (
     Ticket,
     Train,
     TrainType,

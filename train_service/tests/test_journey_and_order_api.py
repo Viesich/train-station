@@ -7,13 +7,13 @@ from rest_framework.reverse import reverse
 from rest_framework.test import APIClient
 from rest_framework import status
 
-from travel_service.models import Journey, Train, Route, Crew, Station, TrainType, Order
-from travel_service.serializers import JourneyListSerializer, JourneyRetrieveSerializer
-from travel_service.views import JourneyViewSet
+from train_service.models import Journey, Train, Route, Crew, Station, TrainType, Order
+from train_service.serializers import JourneyListSerializer, JourneyRetrieveSerializer
+from train_service.views import JourneyViewSet
 
 
-JOURNEY_URL = reverse("travel_service:journey-list")
-ORDERS_URL = reverse("travel_service:order-list")
+JOURNEY_URL = reverse("train_service:journey-list")
+ORDERS_URL = reverse("train_service:order-list")
 PAYLOAD = {
     "route": None,
     "train": None,
@@ -23,7 +23,7 @@ PAYLOAD = {
 
 
 def detail_url(journey_id):
-    return reverse("travel_service:journey-detail", args=(journey_id,))
+    return reverse("train_service:journey-detail", args=(journey_id,))
 
 
 class BaseTestSetup(TestCase):

@@ -31,8 +31,8 @@ urlpatterns = (
     [
         path("admin/", admin.site.urls),
         path(
-            "api/travel_service/",
-            include("travel_service.urls", namespace="travel_service"),
+            "api/train_service/",
+            include("train_service.urls", namespace="train_service"),
         ),
         path("api/user/", include("user.urls", namespace="user")),
         path("api/schema/", SpectacularAPIView.as_view(), name="schema"),

@@ -12,7 +12,7 @@ from rest_framework.response import Response
 from rest_framework.serializers import BaseSerializer, Serializer
 from rest_framework.viewsets import GenericViewSet
 
-from travel_service.models import (
+from train_service.models import (
     Order,
     Station,
     Route,
@@ -22,7 +22,7 @@ from travel_service.models import (
     Journey,
     Ticket,
 )
-from travel_service.serializers import (
+from train_service.serializers import (
     StationSerializer,
     StationListSerializer,
     StationDetailSerializer,
@@ -176,7 +176,7 @@ class JourneyViewSet(viewsets.ModelViewSet):
     queryset = Journey.objects.all()
     permission_classes = [IsAuthenticated]
 
-    def get_permissions(self) -> List[BasePermission]:
+    def get_permissions(self) -> list:
         if self.action in ["list", "retrieve"]:
             return [AllowAny()]
         return super().get_permissions()

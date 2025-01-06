@@ -5,11 +5,11 @@ from rest_framework.reverse import reverse
 from rest_framework.test import APIClient
 from rest_framework import status
 
-from travel_service.models import Route, Station
-from travel_service.serializers import RouteListSerializer
+from train_service.models import Route, Station
+from train_service.serializers import RouteListSerializer
 
 
-ROUTE_URL = reverse("travel_service:route-list")
+ROUTE_URL = reverse("train_service:route-list")
 PAYLOAD = {
     "source": None,
     "destination": None,
@@ -18,7 +18,7 @@ PAYLOAD = {
 
 
 def detail_url(route_id):
-    return reverse("travel_service:route-detail", args=(route_id,))
+    return reverse("train_service:route-detail", args=(route_id,))
 
 
 def sample_route(**params):

@@ -4,16 +4,16 @@ from rest_framework.reverse import reverse
 from rest_framework.test import APIClient
 from rest_framework import status
 
-from travel_service.models import Train, TrainType
-from travel_service.serializers import TrainSerializer, TrainListSerializer
-from travel_service.views import TrainViewSet
+from train_service.models import Train, TrainType
+from train_service.serializers import TrainSerializer, TrainListSerializer
+from train_service.views import TrainViewSet
 
 
-TRAIN_URL = reverse("travel_service:train-list")
+TRAIN_URL = reverse("train_service:train-list")
 
 
 def detail_url(train_id):
-    return reverse("travel_service:train-detail", args=(train_id,))
+    return reverse("train_service:train-detail", args=(train_id,))
 
 
 def sample_train(**params) -> Train:

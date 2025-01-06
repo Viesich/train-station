@@ -34,7 +34,7 @@ INTERNAL_IPS = ["127.0.0.1"]
 
 INSTALLED_APPS = [
     "user",
-    "travel_service",
+    "train_service",
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
