@@ -18,9 +18,7 @@ packaging==24.2
 pathspec==0.12.1
 pillow==11.0.0
 platformdirs==4.3.6
-psycopg==3.2.3
 psycopg-binary==3.2.3
-psycopg2==2.9.10
 psycopg2-binary==2.9.10
 pycodestyle==2.12.1
 pyflakes==3.2.0
