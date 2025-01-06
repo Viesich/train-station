@@ -74,9 +74,10 @@ class AdminAuthenticateTrainApiTests(TestCase):
 
     def test_trains_list(self):
         sample_train()
-        res = self.client.get(TRAIN_URL)
         trains = Train.objects.all()
         serializer = TrainListSerializer(trains, many=True)
+        with self.assertNumQueries(2):
+            res = self.client.get(TRAIN_URL)
         self.assertEqual(res.data["results"], serializer.data)
         self.assertEqual(res.status_code, status.HTTP_200_OK)
 
