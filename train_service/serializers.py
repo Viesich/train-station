@@ -191,14 +191,11 @@ class JourneyRetrieveSerializer(serializers.ModelSerializer):
 
 
 class JourneyListSerializer(JourneyRetrieveSerializer):
-    tickets_available = serializers.SerializerMethodField()
+    tickets_available = serializers.IntegerField()
 
     class Meta:
         model = Journey
         fields = ("id", "route", "departure_time", "tickets_available")
-
-    def get_tickets_available(self, obj: Journey) -> int:
-        return obj.train.cargo_num * obj.train.places_in_cargo
 
 
 class OrderSerializer(serializers.ModelSerializer):
