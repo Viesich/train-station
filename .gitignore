@@ -6,4 +6,3 @@ __pycache__/
 *.sqlite
 */migrations/
 !*/migrations/__init__.py
-media/
