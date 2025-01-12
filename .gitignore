@@ -1,2 +1,8 @@
 .idea
 .venv
+.env
+db.sqlite3
+__pycache__/
+*.sqlite
+*/migrations/
+!*/migrations/__init__.py
