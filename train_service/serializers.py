@@ -1,5 +1,4 @@
 from collections import defaultdict
-from typing import Dict, Any
 
 from django.db import transaction
 
