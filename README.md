@@ -150,3 +150,41 @@ Below is a simplified representation of the database schema:
    ```
 
 ![website interface](train_session_diagram_a620513487.webp)
+
+## API Screenshots
+
+### API root
+![api list](screenshots/api_root_train_station.png)
+### Crew
+![crew list](screenshots/crew_list.png)
+![crew create](screenshots/crew_create.png)
+### Train-type
+![train-type create](screenshots/train-type_create.png)
+### Train
+![train list](screenshots/train_list.png)
+![train create](screenshots/train_create.png)
+![train detail](screenshots/train_detail.png)
+### Station
+![station list](screenshots/station_list.png)
+![station create](screenshots/station_create.png)
+### Route
+![route list](screenshots/route_list.png)
+![route create](screenshots/route_create.png)
+### Journey
+![journey list](screenshots/journey_list.png)
+![journey detail before buying tickets](screenshots/journey_detail.png)
+![journey detail after buying tickets](screenshots/journey_detail_with_free_seats.png)
+### Order
+![order list](screenshots/order_list.png)
+![order detail](screenshots/order_detail.png)
+
+
+## User Screenshots
+
+![user create](screenshots/user_create.png)
+![user me](screenshots/user_me.png)
+![user token](screenshots/token.png)
+
+## Documentation screenshots
+![swagger](screenshots/swagger.png)
+![redoc](screenshots/redoc.png)
